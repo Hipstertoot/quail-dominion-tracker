@@ -1,0 +1,1209 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dominion League — Shared Tracker</title>
+  <style>
+    :root{
+      --bg:#0b1020; --panel:rgba(255,255,255,.06); --panel2:rgba(255,255,255,.09);
+      --text:rgba(255,255,255,.92); --muted:rgba(255,255,255,.7);
+      --border:rgba(255,255,255,.14); --accent:#7aa2ff; --good:#48d597; --bad:#ff5e7a;
+      --shadow:0 10px 30px rgba(0,0,0,.35); --radius:16px;
+      --mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      --sans:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;font-family:var(--sans);color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 20% -10%, rgba(122,162,255,0.25), transparent 60%),
+        radial-gradient(1000px 700px at 100% 0%, rgba(72,213,151,0.18), transparent 55%),
+        radial-gradient(900px 600px at 50% 110%, rgba(255,94,122,0.12), transparent 60%),
+        var(--bg);
+      min-height:100vh;
+    }
+    header{padding:22px 18px 10px;max-width:1200px;margin:0 auto;display:flex;gap:12px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap}
+    h1{margin:0;font-size:20px;letter-spacing:.3px}
+    .sub{margin-top:6px;color:var(--muted);font-size:13px}
+    .container{max-width:1200px;margin:0 auto;padding:10px 18px 28px}
+    .grid{display:grid;gap:14px;grid-template-columns:1.2fr .8fr}
+    @media(max-width:980px){.grid{grid-template-columns:1fr}}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+    .hd{padding:12px 14px;border-bottom:1px solid var(--border);background:linear-gradient(to bottom, rgba(255,255,255,.04), transparent);display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .title{font-weight:900;font-size:14px;letter-spacing:.2px}
+    .bd{padding:14px}
+    .pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.05);font-size:12px;color:var(--muted)}
+    .pill b{color:var(--text)}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .row>*{flex:1}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    input[type="text"],input[type="number"],input[type="date"],textarea,select{
+      width:100%;padding:10px 10px;border-radius:12px;border:1px solid var(--border);
+      background:rgba(0,0,0,.16);color:var(--text);outline:none
+    }
+    textarea{min-height:70px;resize:vertical}
+    input[type="number"]{font-family:var(--mono)}
+    button{
+      border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--text);
+      padding:9px 12px;border-radius:12px;cursor:pointer;font-weight:800;font-size:13px;
+      transition:transform .05s ease, background .15s ease, border-color .15s ease;
+    }
+    button:hover{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.22)}
+    button:active{transform:translateY(1px)}
+    button.primary{background:rgba(122,162,255,.18);border-color:rgba(122,162,255,.35)}
+    button.primary:hover{background:rgba(122,162,255,.25)}
+    button.danger{background:rgba(255,94,122,.14);border-color:rgba(255,94,122,.35)}
+    button.danger:hover{background:rgba(255,94,122,.22)}
+    button:disabled{opacity:.45;cursor:not-allowed}
+    .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .toolbar .left,.toolbar .rightside{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .hr{height:1px;background:rgba(255,255,255,.10);margin:12px 0}
+    .table{width:100%;border-collapse:collapse}
+    .table th,.table td{border-bottom:1px solid rgba(255,255,255,.10);padding:10px 8px;font-size:13px;vertical-align:top}
+    .table th{text-align:left;color:var(--muted);font-weight:900;font-size:12px;letter-spacing:.2px}
+    .table tr:hover td{background:rgba(255,255,255,.03)}
+    .right{text-align:right}
+    .mono{font-family:var(--mono)}
+    .muted{color:var(--muted)}
+    .tiny{font-size:11px;color:var(--muted)}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;border:1px solid var(--border);background:rgba(255,255,255,.06);margin-right:6px;white-space:nowrap}
+    .badge.win{border-color:rgba(72,213,151,.40);background:rgba(72,213,151,.12)}
+    .badge.loss{border-color:rgba(255,94,122,.40);background:rgba(255,94,122,.10)}
+    .badge.exp{border-color:rgba(122,162,255,.35);background:rgba(122,162,255,.12)}
+    .kpi{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+    @media(max-width:980px){.kpi{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .kpi .box{background:var(--panel2);border:1px solid var(--border);border-radius:14px;padding:10px 12px}
+    .kpi .box .n{font-size:18px;font-weight:950;letter-spacing:.3px}
+    .kpi .box .l{font-size:12px;color:var(--muted);margin-top:4px}
+    details summary{cursor:pointer;color:var(--muted);font-weight:900;font-size:13px;list-style:none}
+    details summary::-webkit-details-marker{display:none}
+    details summary:before{content:"▸";margin-right:8px;color:var(--accent)}
+    details[open] summary:before{content:"▾"}
+    .linkish{color:var(--accent);text-decoration:underline;cursor:pointer}
+    .banner{border:1px solid rgba(122,162,255,.35);background:rgba(122,162,255,.10);border-radius:14px;padding:10px 12px}
+  </style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Dominion League — Shared Tracker</h1>
+    <div class="sub">One shared league on GitHub Pages. Read-only for everyone; editing unlocked only on your browser.</div>
+  </div>
+  <div class="pill"><span>Status:</span> <b id="statusText">Loading…</b></div>
+</header>
+
+<div class="container">
+  <div class="banner">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+      <div>
+        <div style="font-weight:900">Share this link with friends:</div>
+        <div class="tiny" id="shareLink">(loading…)</div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button id="btnRefresh">Refresh</button>
+        <button id="btnExport" title="Download a backup of the current shared data">Export backup</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:14px">
+    <!-- Leaderboard -->
+    <div class="card">
+      <div class="hd">
+        <div class="title">Leaderboard</div>
+        <div class="pill"><span>Games:</span> <b id="gamesCount">0</b></div>
+      </div>
+      <div class="bd">
+        <div class="toolbar">
+          <div class="left">
+            <div style="min-width:240px;flex:1">
+              <label>Sort by</label>
+              <select id="sortBy">
+                <option value="wins">Wins</option>
+                <option value="winrate">Win rate</option>
+                <option value="games">Games played</option>
+                <option value="avgVp">Avg VP</option>
+                <option value="streak">Current streak</option>
+              </select>
+            </div>
+            <div style="min-width:240px;flex:1">
+              <label>Filter player</label>
+              <select id="filterPlayer"><option value="">(All players)</option></select>
+            </div>
+          </div>
+          <div class="rightside">
+            <div class="pill"><span>Last game:</span> <b id="lastGame">—</b></div>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="kpi">
+          <div class="box"><div class="n" id="kpiTopName">—</div><div class="l">Top wins</div></div>
+          <div class="box"><div class="n" id="kpiTopWinrate">—</div><div class="l">Best win rate (min 3 games)</div></div>
+          <div class="box"><div class="n" id="kpiMostGames">—</div><div class="l">Most games played</div></div>
+          <div class="box"><div class="n" id="kpiLongestStreak">—</div><div class="l">Longest win streak</div></div>
+        </div>
+
+        <div class="hr"></div>
+
+        <table class="table" id="leaderTable">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th class="right">Wins</th>
+              <th class="right">Games</th>
+              <th class="right">Win %</th>
+              <th class="right">Avg VP</th>
+              <th class="right">Streak</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <details style="margin-top:12px" id="detailsBlock">
+          <summary>Player details & head-to-head</summary>
+          <div style="margin-top:12px" id="playerDetails"></div>
+        </details>
+      </div>
+    </div>
+
+    <!-- Admin / Add Game -->
+    <div class="card">
+      <div class="hd">
+        <div class="title">Admin</div>
+        <div class="pill"><span>Editing:</span> <b id="editModeText">Locked</b></div>
+      </div>
+      <div class="bd">
+
+        <details id="adminLogin" open>
+          <summary>Unlock editing (only on your browser)</summary>
+          <div style="margin-top:12px">
+            <label>GitHub fine-grained PAT (repo-limited; Contents read/write)</label>
+            <input id="tokenInput" type="text" placeholder="ghp_… / github_pat_…" />
+            <div class="tiny">Stored only in this browser’s localStorage. Don’t share it.</div>
+            <div class="row" style="margin-top:10px">
+              <button id="btnSaveToken" class="primary">Save token</button>
+              <button id="btnClearToken" class="danger">Remove token</button>
+            </div>
+          </div>
+        </details>
+
+        <div class="hr"></div>
+
+        <div id="adminOnly" style="display:none">
+          <div class="title" style="margin-bottom:8px">Add Game (admin only)</div>
+
+          <div class="row">
+            <div>
+              <label>Date</label>
+              <input id="gameDate" type="date" />
+            </div>
+            <div>
+              <label>Players in this game</label>
+              <select id="gamePlayers" multiple size="7" style="min-height:176px"></select>
+              <div class="tiny">Hold Ctrl/⌘ for multi-select. Works for 4–6 players (or more).</div>
+            </div>
+          </div>
+
+          <div style="margin-top:10px">
+            <label>Expansions used</label>
+            <select id="gameExpansions" multiple size="6" style="min-height:154px"></select>
+            <div class="tiny">Default is Core.</div>
+          </div>
+
+          <div style="margin-top:10px" class="row">
+            <div>
+              <label>Winner mode</label>
+              <select id="winnerMode">
+                <option value="auto">Auto (highest VP)</option>
+                <option value="manual">Manual select</option>
+              </select>
+            </div>
+            <div>
+              <label>Winner (manual only)</label>
+              <select id="gameWinner"><option value="">(Select winner)</option></select>
+            </div>
+          </div>
+
+          <div id="vpInputsWrap" style="margin-top:10px"></div>
+
+          <div style="margin-top:10px">
+            <label>Notes</label>
+            <textarea id="gameNotes" placeholder="Optional: kingdom notes, etc."></textarea>
+          </div>
+
+          <div class="row" style="margin-top:12px">
+            <button id="btnAddGame" class="primary">Add Game</button>
+            <button id="btnClearGame">Clear</button>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="title" style="margin-bottom:8px">Players</div>
+          <div class="row">
+            <div style="flex:1.6">
+              <label>Add player</label>
+              <input id="newPlayerName" type="text" placeholder="Name" />
+            </div>
+            <div style="flex:.6">
+              <label>&nbsp;</label>
+              <button id="btnAddPlayer">Add</button>
+            </div>
+          </div>
+
+          <div style="margin-top:10px">
+            <label>Manage players</label>
+            <select id="managePlayer" size="6" style="min-height:154px"></select>
+            <div class="row" style="margin-top:10px">
+              <button id="btnRenamePlayer">Rename</button>
+              <button id="btnDeletePlayer" class="danger">Delete</button>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="title" style="margin-bottom:8px">Expansions</div>
+          <div class="row">
+            <div style="flex:1.6">
+              <label>Add expansion</label>
+              <input id="newExpansionName" type="text" placeholder="e.g., Intrigue" />
+            </div>
+            <div style="flex:.6">
+              <label>&nbsp;</label>
+              <button id="btnAddExpansion">Add</button>
+            </div>
+          </div>
+
+          <div style="margin-top:10px">
+            <label>Manage expansions</label>
+            <select id="manageExpansion" size="6" style="min-height:154px"></select>
+            <div class="row" style="margin-top:10px">
+              <button id="btnRenameExpansion">Rename</button>
+              <button id="btnDeleteExpansion" class="danger">Delete</button>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="title" style="margin-bottom:8px">Demo tools</div>
+          <div class="row">
+            <button id="btnDummy" title="Adds some fake players/games for a demo">Generate dummy data</button>
+            <button id="btnPush" class="primary" title="Force-save current changes to GitHub">Save to GitHub now</button>
+          </div>
+          <div class="tiny">Use “Generate dummy data” to demo, then delete games from history.</div>
+        </div>
+
+        <div id="readOnlyNote" class="tiny">
+          Viewing mode: read-only. Ask the league admin to update results.
+        </div>
+
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="card" style="grid-column:1 / -1">
+      <div class="hd">
+        <div class="title">Game History</div>
+        <div class="pill"><span>Shown:</span> <b id="historyShown">0</b></div>
+      </div>
+      <div class="bd">
+        <div class="toolbar">
+          <div class="left">
+            <div style="min-width:240px;flex:1">
+              <label>Search notes</label>
+              <input id="searchNotes" type="text" placeholder="Type to filter…" />
+            </div>
+            <div style="min-width:240px;flex:1">
+              <label>Show last</label>
+              <select id="historyLimit">
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="200">200</option>
+                <option value="99999">All</option>
+              </select>
+            </div>
+          </div>
+          <div class="rightside">
+            <button id="btnUndo" disabled>Undo Delete</button>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <table class="table" id="historyTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Players</th>
+              <th>Expansions</th>
+              <th>Winner</th>
+              <th>VP</th>
+              <th>Notes</th>
+              <th class="right">Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <div class="tiny" style="margin-top:10px">
+          Deleting games is admin-only (requires token). Everyone can refresh to see updates.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(() => {
+  // ============================
+  // CONFIG: EDIT THESE 3 VALUES
+  // ============================
+  const CONFIG = {
+    owner: "YOUR_GITHUB_USERNAME",
+    repo: "YOUR_REPO_NAME",
+    branch: "main",
+    dataPath: "data.json"
+  };
+
+  // Storage keys (in YOUR browser)
+  const TOKEN_KEY = "dominion_admin_pat_v1";
+  const CACHE_KEY = "dominion_last_loaded_v1";
+
+  // GitHub endpoints
+  const apiBase = () => `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}`;
+  const contentsUrl = () => `${apiBase()}/contents/${CONFIG.dataPath}`;
+  const rawUrl = () => `https://raw.githubusercontent.com/${CONFIG.owner}/${CONFIG.repo}/${CONFIG.branch}/${CONFIG.dataPath}?t=${Date.now()}`;
+
+  // UI helpers
+  const el = id => document.getElementById(id);
+  const escapeHtml = str => String(str).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+  const selectedValues = sel => Array.from(sel.selectedOptions).map(o => o.value);
+  const uid = () => Math.random().toString(36).slice(2,10) + "-" + Date.now().toString(36);
+
+  const todayISO = () => {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const dd = String(d.getDate()).padStart(2,"0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  // State is the SHARED data.json
+  let state = null;
+  let lastFileSha = null;
+  let lastDeletedGame = null;
+  let isAdmin = false;
+
+  function setStatus(t){ el("statusText").textContent = t; }
+
+  function getToken(){ return localStorage.getItem(TOKEN_KEY) || ""; }
+  function setToken(t){ localStorage.setItem(TOKEN_KEY, t); }
+  function clearToken(){ localStorage.removeItem(TOKEN_KEY); }
+
+  function shareLinkText() {
+    // GitHub Pages URL heuristic:
+    // user site: https://{owner}.github.io/{repo}/
+    return `https://${CONFIG.owner}.github.io/${CONFIG.repo}/`;
+  }
+
+  // =========
+  // GitHub I/O
+  // =========
+  async function fetchSharedData() {
+    setStatus("Loading shared data…");
+
+    // Prefer raw GitHub content for quick reads
+    const r = await fetch(rawUrl(), { cache: "no-store" });
+    if (!r.ok) throw new Error(`Failed to load data.json (${r.status})`);
+    const data = await r.json();
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), data }));
+    return data;
+  }
+
+  async function fetchShaViaContentsAPI() {
+    // Needed for PUT updates
+    const r = await fetch(`${contentsUrl()}?ref=${encodeURIComponent(CONFIG.branch)}`, {
+      headers: { "Accept": "application/vnd.github+json" }
+    });
+    if (!r.ok) throw new Error(`Failed to read file metadata (${r.status})`);
+    const j = await r.json();
+    return j.sha;
+  }
+
+  async function saveSharedData(commitMessage) {
+    const token = getToken().trim();
+    if (!token) throw new Error("No admin token set.");
+
+    // Contents API requires base64 content + sha for updates
+    // See GitHub "repository contents" endpoints. :contentReference[oaicite:6]{index=6}
+    const sha = lastFileSha || await fetchShaViaContentsAPI();
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(state, null, 2))));
+
+    const r = await fetch(contentsUrl(), {
+      method: "PUT",
+      headers: {
+        "Accept": "application/vnd.github+json",
+        "Authorization": `Bearer ${token}`,
+        "X-GitHub-Api-Version": "2022-11-28"
+      },
+      body: JSON.stringify({
+        message: commitMessage || "Update Dominion league data",
+        content,
+        sha,
+        branch: CONFIG.branch
+      })
+    });
+
+    if (!r.ok) {
+      const txt = await r.text().catch(()=>"");
+      throw new Error(`Save failed (${r.status}): ${txt.slice(0,200)}`);
+    }
+    const j = await r.json();
+    lastFileSha = j.content?.sha || sha;
+  }
+
+  async function validateAdminToken() {
+    const token = getToken().trim();
+    if (!token) return false;
+
+    // Try a harmless read via Contents API with auth (confirms token works for repo access).
+    const r = await fetch(`${contentsUrl()}?ref=${encodeURIComponent(CONFIG.branch)}`, {
+      headers: {
+        "Accept": "application/vnd.github+json",
+        "Authorization": `Bearer ${token}`,
+        "X-GitHub-Api-Version": "2022-11-28"
+      }
+    });
+    return r.ok;
+  }
+
+  // =========
+  // Stats
+  // =========
+  function safePlayerName(pid) {
+    const p = state.players.find(x => x.id === pid);
+    return p ? p.name : "(unknown)";
+  }
+  function safeExpansionName(eid) {
+    const e = state.expansions.find(x => x.id === eid);
+    return e ? e.name : "(unknown)";
+  }
+  function fmtPct(x){ return isFinite(x) ? (x*100).toFixed(1)+"%" : "—"; }
+  function byDateDesc(a,b){ return a.dateISO === b.dateISO ? (b.createdAt||0)-(a.createdAt||0) : b.dateISO.localeCompare(a.dateISO); }
+
+  function computeStreaks() {
+    const current = {}, best = {}, last = {};
+    const chronological = [...state.games].sort((a,b) => (a.dateISO.localeCompare(b.dateISO) || (a.createdAt||0)-(b.createdAt||0)));
+    for (const g of chronological) {
+      const ps = g.playerIds || [];
+      for (const pid of ps) { if (!(pid in current)) current[pid]=0; if (!(pid in best)) best[pid]=0; }
+      for (const pid of ps) {
+        const win = pid === g.winnerId;
+        if (win) {
+          current[pid] = (last[pid] === "W") ? current[pid]+1 : 1;
+          last[pid] = "W";
+          if (current[pid] > best[pid]) best[pid] = current[pid];
+        } else {
+          current[pid] = 0;
+          last[pid] = "L";
+        }
+      }
+    }
+    return { current, best };
+  }
+
+  function buildStats() {
+    const stats = {};
+    for (const p of state.players) stats[p.id] = { wins:0, games:0, vpSum:0, vpCount:0 };
+    for (const g of state.games) {
+      for (const pid of g.playerIds||[]) {
+        if (!stats[pid]) stats[pid] = { wins:0, games:0, vpSum:0, vpCount:0 };
+        stats[pid].games++;
+      }
+      if (g.winnerId) {
+        if (!stats[g.winnerId]) stats[g.winnerId] = { wins:0, games:0, vpSum:0, vpCount:0 };
+        stats[g.winnerId].wins++;
+      }
+      if (g.vp) {
+        for (const [pid,v] of Object.entries(g.vp)) {
+          const n = Number(v);
+          if (!isFinite(n)) continue;
+          if (!stats[pid]) stats[pid] = { wins:0, games:0, vpSum:0, vpCount:0 };
+          stats[pid].vpSum += n; stats[pid].vpCount++;
+        }
+      }
+    }
+    return { stats, streaks: computeStreaks() };
+  }
+
+  function buildHeadToHead(playerId) {
+    const h = {};
+    for (const g of state.games) {
+      if (!g.playerIds?.includes(playerId)) continue;
+      for (const opp of g.playerIds) {
+        if (opp === playerId) continue;
+        if (!h[opp]) h[opp] = { games:0, wins:0 };
+        h[opp].games++;
+        if (g.winnerId === playerId) h[opp].wins++;
+      }
+    }
+    return h;
+  }
+
+  // =========
+  // Rendering
+  // =========
+  function getActivePlayers(){ return state.players.filter(p => p.active !== false); }
+  function getActiveExpansions(){ return state.expansions.filter(e => e.active !== false); }
+
+  function renderSelects() {
+    const players = getActivePlayers().sort((a,b)=>a.name.localeCompare(b.name));
+    const exps = getActiveExpansions().sort((a,b)=>a.name.localeCompare(b.name));
+
+    const gp = el("gamePlayers"); gp.innerHTML="";
+    for (const p of players) { const o=document.createElement("option"); o.value=p.id; o.textContent=p.name; gp.appendChild(o); }
+
+    const gw = el("gameWinner");
+    gw.innerHTML = `<option value="">(Select winner)</option>`;
+    for (const p of players) { const o=document.createElement("option"); o.value=p.id; o.textContent=p.name; gw.appendChild(o); }
+
+    const ge = el("gameExpansions");
+    const prev = new Set(selectedValues(ge));
+    ge.innerHTML="";
+    for (const e of exps) {
+      const o=document.createElement("option"); o.value=e.id; o.textContent=e.name;
+      if (prev.size===0 && e.id==="core") o.selected=true;
+      if (prev.has(e.id)) o.selected=true;
+      ge.appendChild(o);
+    }
+
+    const mp = el("managePlayer"); mp.innerHTML="";
+    for (const p of players) { const o=document.createElement("option"); o.value=p.id; o.textContent=p.name; mp.appendChild(o); }
+
+    const me = el("manageExpansion"); me.innerHTML="";
+    for (const e of exps) { const o=document.createElement("option"); o.value=e.id; o.textContent=e.name; me.appendChild(o); }
+
+    const fp = el("filterPlayer");
+    const cur = fp.value;
+    fp.innerHTML = `<option value="">(All players)</option>`;
+    for (const p of players) { const o=document.createElement("option"); o.value=p.id; o.textContent=p.name; fp.appendChild(o); }
+    fp.value = cur || "";
+  }
+
+  function renderVpInputs() {
+    const ids = selectedValues(el("gamePlayers"));
+    const wrap = document.createElement("div");
+    wrap.className="card";
+    wrap.style.background="rgba(255,255,255,0.04)";
+    wrap.style.borderRadius="14px";
+    wrap.style.border="1px solid rgba(255,255,255,0.12)";
+    wrap.style.boxShadow="none";
+    wrap.style.overflow="hidden";
+
+    const hd = document.createElement("div");
+    hd.className="hd";
+    hd.style.padding="10px 12px";
+    hd.innerHTML = `<div class="title">VP totals (required)</div><div class="tiny">Used for Avg VP and auto winner</div>`;
+    wrap.appendChild(hd);
+
+    const bd = document.createElement("div");
+    bd.className="bd";
+    bd.style.padding="10px 12px";
+
+    if (!ids.length) {
+      bd.innerHTML = `<div class="tiny">Select players to enter VP totals.</div>`;
+    } else {
+      const grid = document.createElement("div");
+      grid.style.display="grid";
+      grid.style.gridTemplateColumns="repeat(2, minmax(0,1fr))";
+      grid.style.gap="10px";
+      for (const pid of ids) {
+        const box = document.createElement("div");
+        box.innerHTML = `
+          <label>${escapeHtml(safePlayerName(pid))}</label>
+          <input type="number" step="1" inputmode="numeric" data-vp-for="${pid}" placeholder="e.g., 42" />
+        `;
+        grid.appendChild(box);
+      }
+      bd.appendChild(grid);
+    }
+    wrap.appendChild(bd);
+    el("vpInputsWrap").innerHTML="";
+    el("vpInputsWrap").appendChild(wrap);
+
+    const gw = el("gameWinner");
+    const set = new Set(ids);
+    if (gw.value && !set.has(gw.value)) gw.value="";
+    Array.from(gw.options).forEach(o => { if (!o.value) return; o.disabled = ids.length ? !set.has(o.value) : false; });
+  }
+
+  function renderLeaderboard() {
+    const { stats, streaks } = buildStats();
+    const filterPid = el("filterPlayer").value || "";
+
+    let rows = Object.keys(stats).map(pid => {
+      const s = stats[pid];
+      const winrate = s.games ? (s.wins/s.games) : NaN;
+      const avgVp = s.vpCount ? (s.vpSum/s.vpCount) : NaN;
+      const curStreak = streaks.current[pid] ?? 0;
+      return { id: pid, name: safePlayerName(pid), wins:s.wins, games:s.games, winrate, avgVp, curStreak };
+    });
+
+    const activeIds = new Set(getActivePlayers().map(p=>p.id));
+    rows = rows.filter(r => filterPid ? r.id===filterPid : activeIds.has(r.id));
+
+    const sortBy = el("sortBy").value;
+    const cmp = {
+      wins: (a,b)=>(b.wins-a.wins)||(b.winrate-a.winrate)||(b.games-a.games)||a.name.localeCompare(b.name),
+      winrate: (a,b)=>((b.winrate||0)-(a.winrate||0))||(b.games-a.games)||(b.wins-a.wins)||a.name.localeCompare(b.name),
+      games: (a,b)=>(b.games-a.games)||(b.wins-a.wins)||a.name.localeCompare(b.name),
+      avgVp: (a,b)=>((b.avgVp||-Infinity)-(a.avgVp||-Infinity))||(b.wins-a.wins)||a.name.localeCompare(b.name),
+      streak: (a,b)=>(b.curStreak-a.curStreak)||(b.wins-a.wins)||a.name.localeCompare(b.name),
+    }[sortBy] || ((a,b)=>b.wins-a.wins);
+    rows.sort(cmp);
+
+    const tbody = el("leaderTable").querySelector("tbody");
+    tbody.innerHTML="";
+    for (const r of rows) {
+      const tr=document.createElement("tr");
+      tr.innerHTML = `
+        <td><span class="linkish" data-player="${r.id}">${escapeHtml(r.name)}</span></td>
+        <td class="right mono">${r.wins}</td>
+        <td class="right mono">${r.games}</td>
+        <td class="right mono">${isFinite(r.winrate)?fmtPct(r.winrate):"—"}</td>
+        <td class="right mono">${isFinite(r.avgVp)?r.avgVp.toFixed(1):"—"}</td>
+        <td class="right mono">${r.curStreak?`${r.curStreak}W`:"—"}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    el("gamesCount").textContent = String(state.games.length);
+    const last = [...state.games].sort(byDateDesc)[0];
+    el("lastGame").textContent = last ? `${last.dateISO} — ${safePlayerName(last.winnerId)}` : "—";
+
+    const activeRows = rows.filter(r => activeIds.has(r.id));
+    const topWins = [...activeRows].sort((a,b)=>(b.wins-a.wins)||a.name.localeCompare(b.name))[0];
+    const topGames = [...activeRows].sort((a,b)=>(b.games-a.games)||a.name.localeCompare(b.name))[0];
+    const topWinrate = [...activeRows].filter(r=>r.games>=3).sort((a,b)=>((b.winrate||0)-(a.winrate||0))||(b.games-a.games)||a.name.localeCompare(b.name))[0];
+    const bestStreakPairs = Object.entries(streaks.best||{}).sort((a,b)=>(b[1]-a[1])||safePlayerName(a[0]).localeCompare(safePlayerName(b[0])));
+    const bestStreak = bestStreakPairs.find(([pid]) => activeIds.has(pid));
+
+    el("kpiTopName").textContent = topWins ? `${topWins.name} (${topWins.wins})` : "—";
+    el("kpiMostGames").textContent = topGames ? `${topGames.name} (${topGames.games})` : "—";
+    el("kpiTopWinrate").textContent = topWinrate ? `${topWinrate.name} (${fmtPct(topWinrate.winrate)})` : "—";
+    el("kpiLongestStreak").textContent = bestStreak ? `${safePlayerName(bestStreak[0])} (${bestStreak[1]}W)` : "—";
+
+    tbody.querySelectorAll("[data-player]").forEach(n=>{
+      n.addEventListener("click", ()=>{
+        const pid=n.getAttribute("data-player");
+        el("filterPlayer").value=pid;
+        renderAll();
+        el("detailsBlock").open=true;
+        renderPlayerDetails(pid);
+      });
+    });
+
+    if (filterPid) renderPlayerDetails(filterPid);
+    else el("playerDetails").innerHTML = `<div class="tiny">Click a player name (or use Filter player) to see head-to-head.</div>`;
+  }
+
+  function renderPlayerDetails(playerId) {
+    const { stats, streaks } = buildStats();
+    const s = stats[playerId] || { wins:0, games:0, vpSum:0, vpCount:0 };
+    const winrate = s.games ? s.wins/s.games : NaN;
+    const avgVp = s.vpCount ? s.vpSum/s.vpCount : NaN;
+    const currentStreak = streaks.current[playerId] ?? 0;
+    const bestStreak = streaks.best[playerId] ?? 0;
+
+    const h2h = buildHeadToHead(playerId);
+    const opps = Object.entries(h2h).map(([oppId,v])=>({
+      oppId, name:safePlayerName(oppId), games:v.games, wins:v.wins, winrate:v.games?v.wins/v.games:NaN
+    })).sort((a,b)=>(b.games-a.games)||((b.winrate||0)-(a.winrate||0))||a.name.localeCompare(b.name));
+
+    el("playerDetails").innerHTML = `
+      <div class="card" style="background:rgba(255,255,255,0.03); border-radius:14px; box-shadow:none;">
+        <div class="hd" style="padding:10px 12px">
+          <div class="title">${escapeHtml(safePlayerName(playerId))}</div>
+          <div class="pill"><span>Best streak:</span> <b class="mono">${bestStreak?bestStreak+"W":"—"}</b></div>
+        </div>
+        <div class="bd" style="padding:10px 12px">
+          <div class="kpi" style="grid-template-columns:repeat(5,minmax(0,1fr));">
+            <div class="box"><div class="n mono">${s.wins}</div><div class="l">Wins</div></div>
+            <div class="box"><div class="n mono">${s.games}</div><div class="l">Games</div></div>
+            <div class="box"><div class="n mono">${isFinite(winrate)?fmtPct(winrate):"—"}</div><div class="l">Win rate</div></div>
+            <div class="box"><div class="n mono">${isFinite(avgVp)?avgVp.toFixed(1):"—"}</div><div class="l">Avg VP</div></div>
+            <div class="box"><div class="n mono">${currentStreak?currentStreak+"W":"—"}</div><div class="l">Current streak</div></div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div style="font-weight:900;margin-bottom:8px">Head-to-head</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            ${
+              opps.length ? opps.map(o => `
+                <div style="padding:10px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05)">
+                  <div style="font-weight:950">${escapeHtml(o.name)}</div>
+                  <div class="tiny" style="margin-top:6px;display:flex;justify-content:space-between"><span>Games</span><span class="mono">${o.games}</span></div>
+                  <div class="tiny" style="margin-top:6px;display:flex;justify-content:space-between"><span>Wins</span><span class="mono">${o.wins}</span></div>
+                  <div class="tiny" style="margin-top:6px;display:flex;justify-content:space-between"><span>Win %</span><span class="mono">${isFinite(o.winrate)?fmtPct(o.winrate):"—"}</span></div>
+                </div>
+              `).join("") : `<div class="tiny">No head-to-head yet.</div>`
+            }
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderHistory() {
+    const limit = Number(el("historyLimit").value || 20);
+    const q = (el("searchNotes").value || "").trim().toLowerCase();
+    const filterPid = el("filterPlayer").value || "";
+
+    let games = [...state.games].sort(byDateDesc);
+    if (filterPid) games = games.filter(g => g.playerIds?.includes(filterPid));
+    if (q) games = games.filter(g => (g.notes||"").toLowerCase().includes(q));
+
+    const shown = games.slice(0, limit);
+    el("historyShown").textContent = String(shown.length);
+
+    const tbody = el("historyTable").querySelector("tbody");
+    tbody.innerHTML="";
+
+    for (const g of shown) {
+      const players = (g.playerIds||[]).map(safePlayerName).join(", ");
+      const exps = (g.expansionIds||[]).length ? g.expansionIds.map(safeExpansionName).join(", ") : "—";
+      const vpStr = g.vp ? Object.entries(g.vp)
+        .filter(([pid]) => (g.playerIds||[]).includes(pid))
+        .map(([pid,v]) => `${safePlayerName(pid)}: ${Number(v)}`)
+        .join(" • ") : "—";
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="mono">${escapeHtml(g.dateISO||"—")}</td>
+        <td>${escapeHtml(players||"—")}</td>
+        <td>${escapeHtml(exps)}</td>
+        <td>${escapeHtml(safePlayerName(g.winnerId))}</td>
+        <td class="mono">${escapeHtml(vpStr)}</td>
+        <td>${g.notes ? escapeHtml(g.notes) : `<span class="muted">—</span>`}</td>
+        <td class="right">
+          ${isAdmin ? `<button class="danger" data-del="${g.id}">Delete</button>` : `<span class="muted">—</span>`}
+        </td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    if (isAdmin) {
+      tbody.querySelectorAll("[data-del]").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          const id = btn.getAttribute("data-del");
+          await deleteGame(id);
+        });
+      });
+    }
+
+    el("btnUndo").disabled = !(isAdmin && lastDeletedGame);
+  }
+
+  function renderAll(){
+    renderSelects();
+    renderVpInputs();
+    renderLeaderboard();
+    renderHistory();
+  }
+
+  // =========
+  // Mutations (admin)
+  // =========
+  function addPlayer(name){
+    const clean=(name||"").trim();
+    if(!clean) return alert("Enter a player name.");
+    const exists = state.players.some(p=>p.active!==false && p.name.toLowerCase()===clean.toLowerCase());
+    if(exists) return alert("That player already exists.");
+    state.players.push({ id: uid(), name: clean, active: true });
+  }
+
+  function renamePlayer(id,newName){
+    const clean=(newName||"").trim();
+    if(!clean) return alert("Enter a new name.");
+    const p=state.players.find(x=>x.id===id);
+    if(!p) return alert("Player not found.");
+    p.name=clean;
+  }
+
+  function deletePlayer(id){
+    const p=state.players.find(x=>x.id===id);
+    if(!p) return alert("Player not found.");
+    p.active=false;
+  }
+
+  function addExpansion(name){
+    const clean=(name||"").trim();
+    if(!clean) return alert("Enter an expansion name.");
+    const exists = state.expansions.some(e=>e.active!==false && e.name.toLowerCase()===clean.toLowerCase());
+    if(exists) return alert("That expansion already exists.");
+    state.expansions.push({ id: uid(), name: clean, active: true });
+  }
+
+  function renameExpansion(id,newName){
+    if (id==="core") return alert("Core can't be renamed.");
+    const clean=(newName||"").trim();
+    if(!clean) return alert("Enter a new name.");
+    const e=state.expansions.find(x=>x.id===id);
+    if(!e) return alert("Expansion not found.");
+    e.name=clean;
+  }
+
+  function deleteExpansion(id){
+    if (id==="core") return alert("Core can't be deleted.");
+    const e=state.expansions.find(x=>x.id===id);
+    if(!e) return alert("Expansion not found.");
+    e.active=false;
+  }
+
+  function readVp(playerIds){
+    const vp={};
+    for(const pid of playerIds){
+      const inp = el("vpInputsWrap").querySelector(`input[data-vp-for="${CSS.escape(pid)}"]`);
+      const v = inp ? inp.value.trim() : "";
+      if (v==="") return { ok:false, msg:"Enter VP totals for all selected players." };
+      const n = Number(v);
+      if (!isFinite(n)) return { ok:false, msg:"VP must be a number." };
+      vp[pid] = Math.round(n);
+    }
+    return { ok:true, vp };
+  }
+
+  function computeWinnerFromVp(playerIds, vp){
+    let max=-Infinity;
+    for(const pid of playerIds) max=Math.max(max, vp[pid]);
+    const tied = playerIds.filter(pid => vp[pid]===max);
+    if (tied.length===1) return tied[0];
+
+    // tie-break prompt (simple)
+    const names = tied.map(safePlayerName).join(", ");
+    const pick = prompt(`VP tie for highest (${max}) between: ${names}\n\nType the winner's name exactly as shown:`);
+    if(!pick) return null;
+    const match = tied.find(pid => safePlayerName(pid).toLowerCase() === pick.trim().toLowerCase());
+    return match || null;
+  }
+
+  function addGameToState(){
+    const dateISO = el("gameDate").value || todayISO();
+    const playerIds = selectedValues(el("gamePlayers"));
+    const expansionIds = selectedValues(el("gameExpansions"));
+    if (playerIds.length < 2) return alert("Select at least 2 players.");
+
+    const vpRes = readVp(playerIds);
+    if(!vpRes.ok) return alert(vpRes.msg);
+
+    const winnerMode = el("winnerMode").value;
+    let winnerId=null;
+    if (winnerMode==="auto") {
+      winnerId = computeWinnerFromVp(playerIds, vpRes.vp);
+      if(!winnerId) return alert("Couldn't resolve winner (tie). Try again or switch to Manual.");
+    } else {
+      winnerId = el("gameWinner").value;
+      if(!winnerId) return alert("Select a winner (manual).");
+      if(!playerIds.includes(winnerId)) return alert("Winner must be one of the selected players.");
+    }
+
+    const notes = (el("gameNotes").value || "").trim();
+    state.games.push({
+      id: uid(),
+      dateISO,
+      playerIds,
+      expansionIds: expansionIds.length ? expansionIds : ["core"],
+      vp: vpRes.vp,
+      winnerId,
+      notes,
+      createdAt: Date.now()
+    });
+  }
+
+  function clearGameForm(){
+    el("gameDate").value = todayISO();
+    el("gameNotes").value = "";
+    el("winnerMode").value = "auto";
+    el("gameWinner").value = "";
+    el("gameWinner").disabled = true;
+    Array.from(el("gamePlayers").options).forEach(o=>o.selected=false);
+    Array.from(el("gameExpansions").options).forEach(o=>o.selected=(o.value==="core"));
+    renderVpInputs();
+  }
+
+  async function deleteGame(id){
+    const idx = state.games.findIndex(g=>g.id===id);
+    if(idx<0) return;
+    const g = state.games[idx];
+    const ok = confirm(`Delete this game?\n\n${g.dateISO}\nWinner: ${safePlayerName(g.winnerId)}\nPlayers: ${(g.playerIds||[]).map(safePlayerName).join(", ")}`);
+    if(!ok) return;
+    lastDeletedGame = g;
+    state.games.splice(idx,1);
+    await pushChanges(`Delete game ${g.dateISO}`);
+  }
+
+  async function pushChanges(msg){
+    setStatus("Saving to GitHub…");
+    await saveSharedData(msg);
+    setStatus("Saved. Reloading…");
+    // Reload from source of truth
+    await reload();
+  }
+
+  // =========
+  // Demo data (admin)
+  // =========
+  function genDummy(){
+    const ok = confirm("Generate dummy players + games for demo?\n\nYou can delete games afterwards.");
+    if(!ok) return;
+
+    // ensure some players
+    const names = ["Alex","Bea","Chris","Dani","Elliot","Finn"];
+    for(const n of names){
+      if(!state.players.some(p=>p.active!==false && p.name.toLowerCase()===n.toLowerCase())){
+        state.players.push({ id: uid(), name:n, active:true });
+      }
+    }
+
+    // 12 random games
+    const pids = state.players.filter(p=>p.active!==false).map(p=>p.id);
+    const expIds = state.expansions.filter(e=>e.active!==false).map(e=>e.id);
+    function randPick(arr,k){
+      const a=[...arr].sort(()=>Math.random()-0.5);
+      return a.slice(0,k);
+    }
+
+    for(let i=0;i<12;i++){
+      const nPlayers = 4 + (Math.random()<0.25 ? 1 : 0) + (Math.random()<0.10 ? 1 : 0); // 4–6
+      const players = randPick(pids, Math.min(nPlayers, pids.length));
+      const vp = {};
+      for(const pid of players) vp[pid] = 20 + Math.floor(Math.random()*40); // 20–59
+      // winner highest VP
+      let winner=players[0], max=vp[winner];
+      for(const pid of players){ if(vp[pid]>max){ max=vp[pid]; winner=pid; } }
+
+      const exps = Math.random()<0.75 ? ["core"] : randPick(expIds.filter(x=>x!=="core"), 1).concat(["core"]);
+      const d = new Date(); d.setDate(d.getDate() - (12 - i));
+      const dateISO = d.toISOString().slice(0,10);
+
+      state.games.push({
+        id: uid(),
+        dateISO,
+        playerIds: players,
+        expansionIds: exps,
+        vp,
+        winnerId: winner,
+        notes: Math.random()<0.25 ? "Demo game" : "",
+        createdAt: Date.now() + i
+      });
+    }
+  }
+
+  // =========
+  // Load / init
+  // =========
+  async function reload(){
+    state = await fetchSharedData();
+    // try to keep sha updated for faster saves
+    try { lastFileSha = await fetchShaViaContentsAPI(); } catch(_) {}
+    renderAll();
+    setStatus(isAdmin ? "Admin (editing enabled)" : "Read-only");
+  }
+
+  function setAdminUI(on){
+    isAdmin = on;
+    el("adminOnly").style.display = on ? "block" : "none";
+    el("readOnlyNote").style.display = on ? "none" : "block";
+    el("editModeText").textContent = on ? "Unlocked" : "Locked";
+  }
+
+  async function init(){
+    el("shareLink").textContent = shareLinkText();
+    el("gameDate").value = todayISO();
+    el("winnerMode").value = "auto";
+    el("gameWinner").disabled = true;
+
+    // Validate token (if present)
+    const ok = await validateAdminToken().catch(()=>false);
+    setAdminUI(ok);
+
+    // Load data
+    try {
+      await reload();
+      setStatus(ok ? "Admin (editing enabled)" : "Read-only");
+    } catch (e) {
+      console.error(e);
+      setStatus("Error (check CONFIG / data.json)");
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        try {
+          const j = JSON.parse(cached);
+          state = j.data;
+          renderAll();
+        } catch(_) {}
+      }
+      alert("Could not load shared data.json. Check CONFIG owner/repo/branch and that data.json exists in the repo root.");
+    }
+  }
+
+  // =========
+  // Wire events
+  // =========
+  el("btnRefresh").addEventListener("click", () => reload().catch(e=>alert(String(e))));
+  el("sortBy").addEventListener("change", renderAll);
+  el("filterPlayer").addEventListener("change", renderAll);
+  el("historyLimit").addEventListener("change", renderHistory);
+  el("searchNotes").addEventListener("input", renderHistory);
+
+  el("btnExport").addEventListener("click", () => {
+    if (!state) return;
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type:"application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `dominion-league-backup-${todayISO()}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  el("btnSaveToken").addEventListener("click", async () => {
+    const t = el("tokenInput").value.trim();
+    if (!t) return alert("Paste your token first.");
+    setToken(t);
+    const ok = await validateAdminToken().catch(()=>false);
+    if (!ok) {
+      clearToken();
+      setAdminUI(false);
+      return alert("Token didn’t validate for this repo. Check repo access + Contents read/write.");
+    }
+    setAdminUI(true);
+    alert("Editing unlocked on this browser.");
+    await reload();
+  });
+
+  el("btnClearToken").addEventListener("click", async () => {
+    clearToken();
+    el("tokenInput").value = "";
+    setAdminUI(false);
+    alert("Token removed. Back to read-only on this browser.");
+    await reload().catch(()=>{});
+  });
+
+  el("gamePlayers").addEventListener("change", renderVpInputs);
+  el("winnerMode").addEventListener("change", () => {
+    const manual = el("winnerMode").value === "manual";
+    el("gameWinner").disabled = !manual;
+  });
+
+  // Admin-only actions
+  el("btnAddGame").addEventListener("click", async () => {
+    try {
+      addGameToState();
+      await pushChanges("Add game");
+      clearGameForm();
+    } catch(e) {
+      alert(String(e));
+    }
+  });
+
+  el("btnClearGame").addEventListener("click", () => clearGameForm());
+
+  el("btnAddPlayer").addEventListener("click", async () => {
+    const name = el("newPlayerName").value;
+    try {
+      addPlayer(name);
+      el("newPlayerName").value = "";
+      await pushChanges(`Add player ${name.trim()}`);
+    } catch(e){ alert(String(e)); }
+  });
+
+  el("newPlayerName").addEventListener("keydown", e => {
+    if (e.key === "Enter") el("btnAddPlayer").click();
+  });
+
+  el("btnRenamePlayer").addEventListener("click", async () => {
+    const id = el("managePlayer").value;
+    if (!id) return alert("Select a player.");
+    const current = safePlayerName(id);
+    const nn = prompt("New name:", current);
+    if (nn == null) return;
+    try {
+      renamePlayer(id, nn);
+      await pushChanges(`Rename player ${current} -> ${nn}`);
+    } catch(e){ alert(String(e)); }
+  });
+
+  el("btnDeletePlayer").addEventListener("click", async () => {
+    const id = el("managePlayer").value;
+    if (!id) return alert("Select a player.");
+    const ok = confirm(`Delete player "${safePlayerName(id)}"? (They’ll disappear from new games)`);
+    if (!ok) return;
+    try {
+      deletePlayer(id);
+      await pushChanges(`Delete player ${id}`);
+    } catch(e){ alert(String(e)); }
+  });
+
+  el("btnAddExpansion").addEventListener("click", async () => {
+    const name = el("newExpansionName").value;
+    try {
+      addExpansion(name);
+      el("newExpansionName").value = "";
+      await pushChanges(`Add expansion ${name.trim()}`);
+    } catch(e){ alert(String(e)); }
+  });
+
+  el("newExpansionName").addEventListener("keydown", e => {
+    if (e.key === "Enter") el("btnAddExpansion").click();
+  });
+
+  el("btnRenameExpansion").addEventListener("click", async () => {
+    const id = el("manageExpansion").value;
+    if (!id) return alert("Select an expansion.");
+    const current = safeExpansionName(id);
+    const nn = prompt("New name:", current);
+    if (nn == null) return;
+    try {
+      renameExpansion(id, nn);
+      await pushChanges(`Rename expansion ${current} -> ${nn}`);
+    } catch(e){ alert(String(e)); }
+  });
+
+  el("btnDeleteExpansion").addEventListener("click", async () => {
+    const id = el("manageExpansion").value;
+    if (!id) return alert("Select an expansion.");
+    const ok = confirm(`Delete expansion "${safeExpansionName(id)}"?`);
+    if (!ok) return;
+    try {
+      deleteExpansion(id);
+      await pushChanges(`Delete expansion ${id}`);
+    } catch(e){ alert(String(e)); }
+  });
+
+  el("btnDummy").addEventListener("click", async () => {
+    try {
+      genDummy();
+      await pushChanges("Generate dummy data");
+    } catch(e){ alert(String(e)); }
+  });
+
+  el("btnPush").addEventListener("click", async () => {
+    try { await pushChanges("Manual save"); } catch(e){ alert(String(e)); }
+  });
+
+  el("btnUndo").addEventListener("click", async () => {
+    if (!isAdmin || !lastDeletedGame) return;
+    state.games.push(lastDeletedGame);
+    lastDeletedGame = null;
+    try { await pushChanges("Undo delete game"); } catch(e){ alert(String(e)); }
+  });
+
+  // Boot
+  init();
+})();
+</script>
+</body>
+</html>
