@@ -89,5 +89,24 @@
       "active": true
     }
   ],
-  "games": []
+  "games": [
+    {
+      "id": "veiv36tw-mk9pl8j9",
+      "dateISO": "2026-01-11",
+      "playerIds": [
+        "9x9d9gan-mk8zcupe",
+        "n5o3da27-mk8zq1b5"
+      ],
+      "expansionIds": [
+        "core"
+      ],
+      "vp": {
+        "9x9d9gan-mk8zcupe": 42,
+        "n5o3da27-mk8zq1b5": 55
+      },
+      "winnerId": "n5o3da27-mk8zq1b5",
+      "notes": "",
+      "createdAt": 1768134433653
+    }
+  ]
 }
