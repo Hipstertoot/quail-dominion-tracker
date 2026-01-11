@@ -961,13 +961,20 @@
     await pushChanges(`Delete game ${g.dateISO}`);
   }
 
-  async function pushChanges(msg){
+  async function pushChanges(msg) {
+    setStatus("Syncing with GitHub…");
+  
+    // Always refresh sha before saving (extra safety)
+    lastFileSha = await fetchShaViaContentsAPI();
+  
     setStatus("Saving to GitHub…");
     await saveSharedData(msg);
+  
+    // Reload from source-of-truth and refresh sha again
     setStatus("Saved. Reloading…");
-    // Reload from source of truth
     await reload();
   }
+
 
   // =========
   // Demo data (admin)
@@ -1021,10 +1028,13 @@
   // =========
   // Load / init
   // =========
-  async function reload(){
+  async function reload() {
+    // Always reload shared JSON from raw
     state = await fetchSharedData();
-    // try to keep sha updated for faster saves
-    try { lastFileSha = await fetchShaViaContentsAPI(); } catch(_) {}
+  
+    // Always refresh the current sha from Contents API
+    lastFileSha = await fetchShaViaContentsAPI();
+  
     renderAll();
     setStatus(isAdmin ? "Admin (editing enabled)" : "Read-only");
   }
