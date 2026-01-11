@@ -1,20 +1,78 @@
 {
   "version": 1,
-  "players": [],
+  "players": [
+    {
+      "id": "wferxqd4-mk8z9rgw",
+      "name": "Dan",
+      "active": true
+    }
+  ],
   "expansions": [
-    { "id": "core", "name": "Core", "active": true },
-    { "id": "intrigue", "name": "Intrigue", "active": true },
-    { "id": "seaside", "name": "Seaside", "active": true },
-    { "id": "prosperity", "name": "Prosperity", "active": true },
-    { "id": "hinterlands", "name": "Hinterlands", "active": true },
-    { "id": "darkages", "name": "Dark Ages", "active": true },
-    { "id": "adventures", "name": "Adventures", "active": true },
-    { "id": "empires", "name": "Empires", "active": true },
-    { "id": "nocturne", "name": "Nocturne", "active": true },
-    { "id": "renaissance", "name": "Renaissance", "active": true },
-    { "id": "menagerie", "name": "Menagerie", "active": true },
-    { "id": "allies", "name": "Allies", "active": true },
-    { "id": "plunder", "name": "Plunder", "active": true }
+    {
+      "id": "core",
+      "name": "Core",
+      "active": true
+    },
+    {
+      "id": "intrigue",
+      "name": "Intrigue",
+      "active": true
+    },
+    {
+      "id": "seaside",
+      "name": "Seaside",
+      "active": true
+    },
+    {
+      "id": "prosperity",
+      "name": "Prosperity",
+      "active": true
+    },
+    {
+      "id": "hinterlands",
+      "name": "Hinterlands",
+      "active": true
+    },
+    {
+      "id": "darkages",
+      "name": "Dark Ages",
+      "active": true
+    },
+    {
+      "id": "adventures",
+      "name": "Adventures",
+      "active": true
+    },
+    {
+      "id": "empires",
+      "name": "Empires",
+      "active": true
+    },
+    {
+      "id": "nocturne",
+      "name": "Nocturne",
+      "active": true
+    },
+    {
+      "id": "renaissance",
+      "name": "Renaissance",
+      "active": true
+    },
+    {
+      "id": "menagerie",
+      "name": "Menagerie",
+      "active": true
+    },
+    {
+      "id": "allies",
+      "name": "Allies",
+      "active": true
+    },
+    {
+      "id": "plunder",
+      "name": "Plunder",
+      "active": true
+    }
   ],
   "games": []
 }
