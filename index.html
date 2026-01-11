@@ -91,6 +91,7 @@
     <div class="sub">One shared league on GitHub Pages. Read-only for everyone; editing unlocked only on your browser.</div>
   </div>
   <div class="pill"><span>Status:</span> <b id="statusText">Loading…</b></div>
+  <button id="btnToggleAdmin">Admin toggle</button>
 </header>
 
 <div class="container">
@@ -109,7 +110,7 @@
 
   <div class="grid" style="margin-top:14px">
     <!-- Leaderboard -->
-    <div class="card">
+    <div id="leaderboard" class="card" style="grid-column:1 / -1">
       <div class="hd">
         <div class="title">Leaderboard</div>
         <div class="pill"><span>Games:</span> <b id="gamesCount">0</b></div>
@@ -170,7 +171,7 @@
     </div>
 
     <!-- Admin / Add Game -->
-    <div class="card">
+    <div id="adminCard" class="card" style="display:none;">
       <div class="hd">
         <div class="title">Admin</div>
         <div class="pill"><span>Editing:</span> <b id="editModeText">Locked</b></div>
@@ -833,6 +834,18 @@
   // =========
   // Mutations (admin)
   // =========
+  function toggleAdmin() {
+    var adminElement = document.getElementById("adminCard");
+    var leaderboardElement = document.getElementById("leaderboard")
+    if (adminElement.style.display === "none") {
+      adminElement.style.display = "block";             //show admin block
+      leaderboardElement.style.gridColumn = "1 / 1";    //adjust leaderboard to fit
+    } else {
+      adminElement.style.display = "none";              //hide admin block
+      leaderboardElement.style.gridColumn = "1 / -1";   //ajdust leaderboard to full width
+    }    
+  }
+
   function addPlayer(name){
     const clean=(name||"").trim();
     if(!clean) return alert("Enter a player name.");
@@ -1083,6 +1096,7 @@
   el("filterPlayer").addEventListener("change", renderAll);
   el("historyLimit").addEventListener("change", renderHistory);
   el("searchNotes").addEventListener("input", renderHistory);
+  el("btnToggleAdmin").addEventListener("click", toggleAdmin);
 
   el("btnExport").addEventListener("click", () => {
     if (!state) return;
